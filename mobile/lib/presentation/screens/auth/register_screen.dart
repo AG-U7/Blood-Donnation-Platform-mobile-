@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:sangvie/core/services/auth_service.dart';
 import 'package:sangvie/core/services/language_service.dart';
 import 'package:sangvie/core/theme/app_colors.dart';
 import 'package:sangvie/presentation/widgets/public_layout.dart';
@@ -15,6 +16,13 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _donorNameController = TextEditingController();
+  final TextEditingController _donorPhoneController = TextEditingController();
+  final TextEditingController _donorPasswordController = TextEditingController();
+  final TextEditingController _donorConfirmPasswordController = TextEditingController();
+  
+  String? _selectedBloodGroup;
+  final List<String> _bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
   @override
   void initState() {
@@ -97,11 +105,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                   const SizedBox(height: 32),
                   
                   SizedBox(
-                    height: 450, // Hauteur fixe pour le contenu des onglets
+                    height: 520, // Augmenté pour accueillir le nouveau champ
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        _buildDonorForm(t),
+                        _buildDonorForm(t, languageService),
                         _buildHospitalForm(t),
                       ],
                     ),
@@ -134,18 +142,68 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildDonorForm(String Function(String) t) {
+  Widget _buildDonorForm(String Function(String) t, LanguageService languageService) {
     return Column(
       children: [
-         SangVieInput(label: t('auth.register.fullName'), hint: "Votre nom complet"),
+        SangVieInput(
+          label: t('auth.register.fullName'), 
+          hint: "Votre nom complet",
+          controller: _donorNameController,
+        ),
         const SizedBox(height: 16),
-        SangVieInput(label: t('auth.register.phone'), hint: "+226 XX XX XX XX"),
+        SangVieInput(
+          label: t('auth.register.phone'), 
+          hint: "+226 XX XX XX XX",
+          controller: _donorPhoneController,
+        ),
         const SizedBox(height: 16),
-        SangVieInput(label: t('auth.register.password'), hint: "Votre mot de passe", obscureText: true),
+        SangVieDropdown<String>(
+          label: t('auth.register.bloodGroup'),
+          hint: "Sélectionnez votre groupe",
+          value: _selectedBloodGroup,
+          items: _bloodGroups.map((group) => DropdownMenuItem(
+            value: group,
+            child: Text(group),
+          )).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedBloodGroup = value;
+            });
+          },
+        ),
         const SizedBox(height: 16),
-        SangVieInput(label: t('auth.register.passwordConfirm'), hint: "Confirmez votre mot de passe", obscureText: true),
+        SangVieInput(
+          label: t('auth.register.password'), 
+          hint: "Votre mot de passe", 
+          obscureText: true,
+          controller: _donorPasswordController,
+        ),
+        const SizedBox(height: 16),
+        SangVieInput(
+          label: t('auth.register.passwordConfirm'), 
+          hint: "Confirmez votre mot de passe", 
+          obscureText: true,
+          controller: _donorConfirmPasswordController,
+        ),
         const Spacer(),
-        SangVieButton(label: t('auth.register.submit'), onPressed: () {}, isFullWidth: true),
+        SangVieButton(
+          label: t('auth.register.submit'), 
+          onPressed: () async {
+            final authService = Provider.of<AuthService>(context, listen: false);
+            final success = await authService.register(
+              name: _donorNameController.text,
+              identifier: _donorPhoneController.text,
+              password: _donorPasswordController.text,
+              type: UserType.donor,
+              bloodGroup: _selectedBloodGroup,
+            );
+            
+            if (success && mounted) {
+              context.go('/donor/home');
+            }
+          }, 
+          isFullWidth: true,
+        ),
       ],
     );
   }

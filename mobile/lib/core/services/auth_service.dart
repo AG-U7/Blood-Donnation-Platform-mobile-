@@ -47,6 +47,25 @@ class AuthService extends ChangeNotifier {
     return false;
   }
 
+  Future<bool> register({
+    required String name,
+    required String identifier,
+    required String password,
+    required UserType type,
+    String? bloodGroup,
+  }) async {
+    // Simulation délai réseau
+    await Future.delayed(const Duration(milliseconds: 800));
+    
+    // Dans une vraie app, on enverrait ça à l'API
+    debugPrint("Inscription: $name, $identifier, Type: $type, Groupe: $bloodGroup");
+    
+    // On simule une réussite
+    _currentUserType = type;
+    notifyListeners();
+    return true;
+  }
+
   void logout() {
     _currentUserType = null;
     notifyListeners();

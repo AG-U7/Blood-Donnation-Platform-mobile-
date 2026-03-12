@@ -144,3 +144,64 @@ class SangVieInput extends StatelessWidget {
     );
   }
 }
+
+class SangVieDropdown<T> extends StatelessWidget {
+  final String? label;
+  final String hint;
+  final T? value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?>? onChanged;
+  final String? errorText;
+  final Widget? prefixIcon;
+
+  const SangVieDropdown({
+    super.key,
+    this.label,
+    required this.hint,
+    this.value,
+    required this.items,
+    this.onChanged,
+    this.errorText,
+    this.prefixIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (label != null) ...[
+          Text(
+            label!,
+            style: GoogleFonts.dmSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.foreground,
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
+        DropdownButtonFormField<T>(
+          value: value,
+          items: items,
+          onChanged: onChanged,
+          icon: const Icon(Icons.keyboard_arrow_down),
+          style: GoogleFonts.dmSans(fontSize: 16, color: AppColors.foreground),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.dmSans(color: AppColors.mutedForeground),
+            filled: true,
+            fillColor: AppColors.inputBackground,
+            prefixIcon: prefixIcon,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            errorText: errorText,
+          ),
+        ),
+      ],
+    );
+  }
+}
